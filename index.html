@@ -1,93 +1,108 @@
-<html>
+<!DOCTYPE html>
+<html lang="ja">
+
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>cue club</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rossorigin="anonymous">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.min.css">
+    <meta charset="UTF-8">
+    <title>ここから見て</title>
 </head>
+
 <body>
 
-    <form class="w-75 mx-auto">
-        <p class="mt-3">タイトル</p>
-        <div>
-            <input class="form-control w-100 mt-1" name="title" placeholder="" required>
-        </div>
-        <p class="mt-3">URL</p>
-        <div>
-            <input class="form-control w-100 mt-1" name="URL" required>
-        </div>
-        <p class="mt-3">時</p>
-        <div>
-            <input class="form-control w-100 mt-1" name="h" required>
-        </div>
-        <p class="mt-3">分</p>
-        <div>
-            <input class="form-control w-100 mt-1" name="m" required>
-        </div>
-        <p class="mt-3">秒</p>
-        <div>
-            <input class="form-control w-100 mt-1" name="s" required>
-        </div>
-        <p class="mt-3">コメント</p>
-        <div>
-            <input class="form-control w-100 mt-1" name="comment" required>
-        </div>
-        <input type="submit" class="mt-4 btn btn-primary" value="送信">
-    </form>
+    <p>YOUTUBEのアドレスと希望再生時間を入力してください。</p>
+    <p>再生時間はどの形式でもかまいませんが、半角数値で指定してください</p>
 
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+    <p>
+        <input type="text" id="orgUrl">
+    </p>
+    <p>
+        <input type="text" id="loadTime_m">　分　<input type="text" id="loadTime_s">　秒　
+    </p>
+    <input type="button" value="アドレス作成" id="checkButton">
+    <p id="msg"></p>
+
     <script>
+        function butotnClick() {
 
-        $(document).ready(function () {
-            const liffId = "1661496926-bXODKkYo";
-            initializeLiff(liffId);
-        })
+            // HTMLのテキストボックス(orgUrl)要素を取得
+            var orgUrl = document.getElementById('orgUrl');
 
-        function initializeLiff(liffId) {
-            liff.init({
-                liffId: liffId
-            }).then(() => {
-                initializeApp();
-            }).catch((err) => {
-                console.log('LIFF Initialization failed ', err);
-            });
+            // テキストボックス(orgUrl)の値を取得
+            var url = orgUrl.value;
+
+            // YouTubeのアドレスかどうかを判定
+            if (isYouTubeURL(url)) {
+                // ビデオIDを抽出
+                var videoId = extractVideoId(url);
+
+
+                // HTMLのテキストボックス(loadTime_m)要素を取得
+                var loadTime_m = document.getElementById('loadTime_m');
+                var loadTime_s = document.getElementById('loadTime_s');
+
+                // テキストボックス(loadTime_m)の値を取得
+                var value1 = loadTime_m.value;
+                var value2 = loadTime_s.value;
+
+                // // 数値が含まれているかを判定
+                // var numcheck = value.match(/\d+/g);
+
+                // // 数値が含まれている場合の処理
+                // if (numcheck) {
+                // 数値が含まれているかを判定
+                var matches1 = value1.match(/\d+/g);
+                var matches2 = value2.match(/\d+/g);
+
+                if (matches1 || matches2) {
+
+                    // 数値の配列を取得
+                    var numbers1 = matches1.map(function (match) {
+                        return parseInt(match, 10);
+                    });
+
+                    // ビデオIDをショートアドレスにして時間指定をしてリンク表示
+                    msg.innerHTML = '<a href="https://youtu.be/' + videoId + '?t=' + numbers1 + '">https://youtu.be/' + videoId + '?t=' + numbers1 + '/</a>';
+                } else {
+                    // ビデオIDをショートアドレスにしてリンク表示
+                    msg.innerHTML = '<a href="https://youtu.be/' + videoId + '/">https://youtu.be/' + videoId + '/</a>';
+                }
+
+            } else {
+                msg.innerText = 'ちがくない？';
+            }
+
         }
 
-        function sendText(text) {
-            liff.sendMessages([{
-                'type': 'text',
-                'text': text
-            }]).then(function () {
-                liff.closeWindow();
-            }).catch(function (error) {
-                window.alert('Failed to send message ' + error);
-            });
+        // YouTubeのアドレスかどうかを判定する関数
+        function isYouTubeURL(url) {
+            var pattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+/;
+            return pattern.test(url);
         }
 
-        const params = (new URL(document.location)).searchParams;
-        const key = params.get('key');
+        // // ビデオIDを抽出する関数
+        // function extractVideoId(url) {
+        //     var match = url.match(/(?<=v=|youtu\.be\/|\/embed\/|\/v\/|\/\d{1,2}\/|\/v=|^youtu\.be$|\/embed$|\/v$|^youtu\.be$|\/embed$|\/v$|^youtu\.be$|\/embed$|\/v$|^youtu\.be$|\/embed$|\/v$|^youtu\.be$|\/embed$|\/v$)([^#\\&\\?]*).*/);
+        //     if (match) {
+        //         return match[1];
+        //     }
+        //     return null;
+        // }
 
-        $(function () {
-            $('form').submit(function () {
-                const title    = $('input[name="title"]').val();
-                const URL = $('input[name="URL"]').val();
-                const h  = $('input[name="h"]').val();
-                const m  = $('input[name="m"]').val();
-                const s = $('input[name="s"]').val();
-                const comment = $('input[name="comment"]').val();
-                const msg = `${title}\n${UTL}\n${h}\n${m}\n${s}\n${comment}`;
-                sendText(msg);
-                return false;
-            });
-        });
+        // YouTubeのURLからビデオIDを抽出する関数
+        function extractVideoId(url) {
+            var videoId = "";
+            var regex = /(?:\/|%3D|v=|vi=)([0-9A-Za-z_-]{11})(?:[%#?&]|$)/;
+            var match = url.match(regex);
 
+            if (match) {
+                videoId = match[1];
+            }
+
+            return videoId;
+        }
+
+        checkButton.addEventListener('click', butotnClick);
     </script>
 
 </body>
+
 </html>
